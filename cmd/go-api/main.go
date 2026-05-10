@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/drona-gyawali/learn-go/internal/config"
+	"github.com/drona-gyawali/learn-go/internal/http/handlers/student"
 )
 
 
@@ -19,9 +20,7 @@ func main() {
 	cfg := config.MustLoad()
 
 	router := http.NewServeMux()
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to the server"))
-	})
+	router.HandleFunc("POST /api/students/create/", student.New("welcome to server"))
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, syscall.SIGTERM,  syscall.SIGINT)
