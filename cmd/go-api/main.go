@@ -12,6 +12,7 @@ import (
 
 	"github.com/drona-gyawali/learn-go/internal/config"
 	"github.com/drona-gyawali/learn-go/internal/http/handlers/student"
+	"github.com/drona-gyawali/learn-go/internal/storage/sqllite"
 )
 
 
@@ -19,8 +20,17 @@ import (
 func main() {
 	cfg := config.MustLoad()
 
+	storage , err := sqllite.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	slog.Info("Storage Service Configured")
 	router := http.NewServeMux()
-	router.HandleFunc("POST /api/students/create/", student.New("welcome to server"))
+	router.HandleFunc("POST /api/students/create/", student.New("welcome to server", storage))
+	router.HandleFunc("GET /api/students/{id}", student.GetById(storage))
+	router.HandleFunc("GET /api/students/", student.GetStudentList(storage))
+
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, syscall.SIGTERM,  syscall.SIGINT)
@@ -46,9 +56,9 @@ func main() {
 	}
 
 
-	err:=server_.Shutdown(ctx)
-	if err != nil {
-		slog.Error("error occured while shutting down %s", slog.String("error", err.Error()))
+	_err := server_.Shutdown(ctx)
+	if _err != nil {
+		slog.Error("error occured while shutting down %s", slog.String("error", _err.Error()))
 	}
 	slog.Info("server closed")
 
