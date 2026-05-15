@@ -69,7 +69,7 @@ func (s *Sqllite) GetStudentById(id int64) (types.Student, error) {
 	err = stmt.QueryRow(id).Scan(&student.Id, &student.Name, &student.Email, &student.Age)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return types.Student{}, fmt.Errorf("No student found with id %s", id)
+			return types.Student{}, fmt.Errorf("No student found with id %d", id)
 		}
 		return types.Student{}, fmt.Errorf("query error: %w", err)
 	}
@@ -104,8 +104,36 @@ func (s *Sqllite) GetStudentList() ([]types.Student, error) {
 		}
 		students = append(students, student)
 	}
-
-
 	return students, nil
-	
+}
+
+
+func (s *Sqllite) UpdateStudent(data types.Student) (int64, error) {
+
+	query := "UPDATE STUDENTS SET name = ?, email = ?, age = ? WHERE id = ?"
+	stmt, err := s.Db.Prepare(query)
+	if err != nil {
+		return 0 , err
+	}
+
+	defer stmt.Close()
+	var student types.Student
+	res, err := stmt.Exec(data.Name, data.Email, data.Age)
+	if err != nil {
+		return 0, fmt.Errorf("No query found")
+	}
+
+	r , err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	if r == 0 {
+		return 0, fmt.Errorf("no student found with ID %d", data.Id)
+	}
+
+	// _id, err := strconv.ParseInt(student.Id, 10, 64)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	return student.Id , nil
 }

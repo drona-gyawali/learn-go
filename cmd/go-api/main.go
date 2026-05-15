@@ -30,7 +30,7 @@ func main() {
 	router.HandleFunc("POST /api/students/create/", student.New("welcome to server", storage))
 	router.HandleFunc("GET /api/students/{id}", student.GetById(storage))
 	router.HandleFunc("GET /api/students/", student.GetStudentList(storage))
-
+	router.HandleFunc("PATCH /api/students/", student.UpdateStudentView(storage))
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, syscall.SIGTERM,  syscall.SIGINT)

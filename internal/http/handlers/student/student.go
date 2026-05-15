@@ -100,3 +100,42 @@ func GetStudentList(storage  storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusOK, student)
 	}
 }
+
+
+func UpdateStudentView(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("updating student by id")
+
+		var student types.Student
+
+		err := json.NewDecoder(r.Body).Decode(&student)
+		if errors.Is(err, io.EOF) {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
+			return 
+		}
+
+		if err  != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return 
+		}
+
+		
+		if err := validator.New().Struct(student); err != nil{
+			validateErrs := err.(validator.ValidationErrors) // data types
+			response.WriteJson(w, http.StatusBadRequest, response.ValidationError(validateErrs))
+			return
+		}
+
+	 
+
+		id, err := storage.UpdateStudent(student) 
+		if err != nil {
+			slog.Info("user updation occured error", slog.String("userId", fmt.Sprintf(err.Error())))
+			response.WriteJson(w, http.StatusInternalServerError, err)
+			return 
+		}
+
+		slog.Info("user updated sucessfully", slog.String("userId", fmt.Sprint(id)))
+		response.WriteJson(w, http.StatusAccepted, student)
+	}
+}
